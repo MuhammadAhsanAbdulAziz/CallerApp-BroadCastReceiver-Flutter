@@ -16,14 +16,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int groupValue = 0;
+  int groupValue = 1;
   final dataStorageSP = DataStorageSP();
-
-  changeTick(){
-    setState(() {
-      groupValue = 2;
-    });
-  }
 
   Future<void> requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
@@ -102,7 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       future: dataStorageSP.getData("saved"),
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data == "accept") {
-                          groupValue = 1;
                           return Radio(
                             value: 1,
                             groupValue: groupValue,
@@ -133,48 +126,52 @@ class _HomeScreenState extends State<HomeScreen> {
                     )
                   ],
                 ),
-                InkWell(
-                  onTap: () {
-                    showDialog(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FutureBuilder(
+                      future: dataStorageSP.getData("saved"),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data == "contacts") {
+                          return Radio(
+                            value: 2,
+                            groupValue: groupValue,
+                            onChanged: (val) {
+                              setState(() {
+                                groupValue = val!;
+                              dataStorageSP.saveData("contacts", "saved");
+                              });
+                              
+                            },
+                          );
+                        } else {
+                          return Radio(
+                            value: 2,
+                            groupValue: groupValue,
+                            onChanged: (val) {
+                              setState(() {
+                                groupValue = val!;
+                              dataStorageSP.saveData("contacts", "saved");
+                              });
+                            },
+                          );
+                        }
+                      },
+                    ),
+                    const Text(
+                      "Only my Contacts",
+                      style: TextStyle(fontSize: 15),
+                    )
+                  ],
+                ),
+                ElevatedButton(onPressed: (){
+                  showDialog(
                       context: context,
                       builder: (context) {
-                        return ContactSettingWidget(func:changeTick);
+                        return ContactSettingWidget();
                       },
                     );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AbsorbPointer(
-                        absorbing: true,
-                        child: FutureBuilder(
-                          future: dataStorageSP.getData("saved"),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData &&
-                                snapshot.data == "contacts") {
-                              groupValue = 2;
-                              return Radio(
-                                value: 2,
-                                groupValue: groupValue,
-                                onChanged: (val) {},
-                              );
-                            } else {
-                              return Radio(
-                                value: 2,
-                                groupValue: groupValue,
-                                onChanged: (val) {},
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                      const Text(
-                        "Only my Contacts",
-                        style: TextStyle(fontSize: 15),
-                      )
-                    ],
-                  ),
-                ),
+                }, child: Text("settings"))
               ],
             ),
           ),

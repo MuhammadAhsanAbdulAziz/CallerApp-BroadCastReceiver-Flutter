@@ -5,9 +5,7 @@ import 'package:caller_app/data/data_storage.dart';
 import 'package:flutter/material.dart';
 
 class ContactSettingWidget extends StatefulWidget {
-  const ContactSettingWidget({super.key, required this.func});
-
-  final Function func;
+  const ContactSettingWidget({super.key});
 
   @override
   State<ContactSettingWidget> createState() => _ContactSettingWidgetState();
@@ -22,37 +20,35 @@ class _ContactSettingWidgetState extends State<ContactSettingWidget> {
   late ReceivePort _receivePort;
   late Isolate _isolate;
   late SendPort _sendPort;
-  void saveChanges() {
-    if (groupValue != -1) {
-      if (groupValue == 1) {
-        dataStorageSP.saveData("1 hour", "duration");
-        dataStorageSP.saveCountdown(3600, "countdown");
-      } else if (groupValue == 2) {
-        dataStorageSP.saveData("3 hour", "duration");
-        dataStorageSP.saveCountdown(10800, "countdown");
-      } else if (groupValue == 3) {
-        dataStorageSP.saveData("6 hour", "duration");
-        dataStorageSP.saveCountdown(21600, "countdown");
-      } else if (groupValue == 4) {
-        dataStorageSP.saveData("24 hour", "duration");
-        dataStorageSP.saveCountdown(86400, "countdown");
-      } else if (groupValue == 5) {
-        dataStorageSP.saveData("3 day", "duration");
-        dataStorageSP.saveCountdown(259200, "countdown");
-      } else if (groupValue == 6) {
-        dataStorageSP.saveData("7 day", "duration");
-        dataStorageSP.saveCountdown(604800, "countdown");
-      } else if (groupValue == 7) {
-        dataStorageSP.saveData("30 day", "duration");
-        dataStorageSP.saveCountdown(2592000, "countdown");
-      }
-      dataStorageSP.saveDataBool(smsChecked, "SMS");
-      dataStorageSP.saveData(smsController.text.toString(), "message");
-      dataStorageSP.saveData("contacts", "saved");
-      Navigator.pop(context);
-      _initializeCountdown();
-      widget.func();
+  void saveChanges() async {
+    if (groupValue == 1) {
+      dataStorageSP.saveData("1 hour", "duration");
+      dataStorageSP.saveCountdown(3600, "countdown");
+    } else if (groupValue == 2) {
+      dataStorageSP.saveData("3 hour", "duration");
+      dataStorageSP.saveCountdown(10800, "countdown");
+    } else if (groupValue == 3) {
+      dataStorageSP.saveData("6 hour", "duration");
+      dataStorageSP.saveCountdown(21600, "countdown");
+    } else if (groupValue == 4) {
+      dataStorageSP.saveData("24 hour", "duration");
+      dataStorageSP.saveCountdown(86400, "countdown");
+    } else if (groupValue == 5) {
+      dataStorageSP.saveData("3 day", "duration");
+      dataStorageSP.saveCountdown(259200, "countdown");
+    } else if (groupValue == 6) {
+      dataStorageSP.saveData("7 day", "duration");
+      dataStorageSP.saveCountdown(604800, "countdown");
+    } else if (groupValue == 7) {
+      dataStorageSP.saveData("30 day", "duration");
+      dataStorageSP.saveCountdown(2592000, "countdown");
     }
+    if (await dataStorageSP.getData("duration") != "") {
+      _initializeCountdown();
+    }
+    dataStorageSP.saveDataBool(smsChecked, "SMS");
+    dataStorageSP.saveData(smsController.text.toString(), "message");
+    Navigator.pop(context);
   }
 
   getOptions() async {
@@ -156,7 +152,6 @@ class _ContactSettingWidgetState extends State<ContactSettingWidget> {
       child: Center(
         child: Card(
           child: SizedBox(
-            height: MediaQuery.of(context).size.height / 1.5,
             child: Column(
               children: [
                 Row(
