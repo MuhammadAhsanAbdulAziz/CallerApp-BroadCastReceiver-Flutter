@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'database_helper.dart';
-import 'my_data_mode.dart'; // Import your DatabaseHelper class
+import '../data/database_helper.dart';
+import '../models/my_data_model.dart'; // Import your DatabaseHelper class
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -10,13 +10,13 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('History'),
+        title: const Text('History'),
       ),
       body: FutureBuilder<List<MyDataModel>>(
         future: DatabaseHelper().getAllData(), // Fetch data from the database
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {

@@ -43,6 +43,32 @@ class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NA
         db.close()
     }
 
+    fun getLastRecord(): String {
+        val db = this.readableDatabase
+        var lastRecord: String? = null
+        val cursor: Cursor = db.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY $COLUMN_ID DESC LIMIT 1", null)
+        if (cursor != null && cursor.moveToFirst()) {
+            val nameIndex = cursor.getColumnIndex(COLUMN_NAME)
+            val dateIndex = cursor.getColumnIndex(COLUMN_DATE)
+            val timeIndex = cursor.getColumnIndex(COLUMN_TIME)
+            val stateIndex = cursor.getColumnIndex(COLUMN_STATE)
+            if (nameIndex >= 0 && dateIndex >= 0 && timeIndex >= 0 && stateIndex >= 0) {
+                val name = cursor.getString(nameIndex)
+                val date = cursor.getString(dateIndex)
+                val time = cursor.getString(timeIndex)
+                val state = cursor.getString(stateIndex)
+                lastRecord = "Name: $name\n Date: $date, Time: $time, State: $state"
+            } else {
+                return ""
+            }
+        } else {
+            return ""
+        }
+        cursor.close()
+        db.close()
+        return lastRecord
+    }
+
 
 
     private fun getCurrentDate(): String {

@@ -1,6 +1,7 @@
 package com.example.caller_app
 
 import android.Manifest
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
@@ -16,10 +17,12 @@ import android.telecom.TelecomManager
 import android.telephony.SmsManager
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.example.caller_app.MyForegroundService.Companion.CHANNEL_ID
 import io.flutter.plugin.common.EventChannel
-import java.text.SimpleDateFormat
-import java.util.Calendar
+import kotlin.random.Random
 
 
 class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : BroadcastReceiver() {
@@ -47,7 +50,7 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
                             intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent1)
                             events.success(callingNumber)
-                            myDatabaseHelper.addData(callingNumber,"1")
+                            myDatabaseHelper.addData(callingNumber, "1")
                             Handler(Looper.getMainLooper()).postDelayed({
                                 acceptCall(telecomManager)
 
@@ -58,21 +61,22 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
                                 ) == "Unknown"
                             ) {
                                 declineCall(telecomManager)
-                                myDatabaseHelper.addData(callingNumber,"2")
+                                myDatabaseHelper.addData(callingNumber, "2")
                                 if (utilManager.getDataBool("SMS")) {
                                     if (!utilManager.getData("message").isNullOrEmpty()) {
                                         sendSMS(
-                                             callingNumber, utilManager.getData("message")!!
+                                            callingNumber, utilManager.getData("message")!!
                                         )
-                                    }
-                                    else{
+                                    } else {
                                         sendSMS(
                                             callingNumber, ""
                                         )
                                     }
-                                    events.success("popupSms")
-                                }else {
-                                    events.success("popup")
+                                    val data = myDatabaseHelper.getLastRecord()
+                                    sendNotification(data)
+                                } else {
+                                    val data = myDatabaseHelper.getLastRecord()
+                                    sendNotification(data)
                                 }
                             } else {
                                 val intent1 = Intent(context, MainActivity::class.java)
@@ -80,7 +84,7 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
                                 intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 context.startActivity(intent1)
                                 events.success("$callingNumber")
-                                myDatabaseHelper.addData(callingNumber,"1")
+                                myDatabaseHelper.addData(callingNumber, "1")
                                 Handler(Looper.getMainLooper()).postDelayed({
                                     acceptCall(telecomManager)
 
@@ -93,16 +97,7 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
         }
     }
 
-    private fun getCurrentDateAndTime(): Pair<String, String> {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-        val timeFormat = SimpleDateFormat("HH:mm:ss")
-        val cal = Calendar.getInstance()
-        val date = dateFormat.format(cal.time)
-        val time = timeFormat.format(cal.time)
-        return Pair(date, time)
-    }
-
-    private fun sendSMS(number:String, msg:String) {
+    private fun sendSMS(number: String, msg: String) {
         val smsManager = SmsManager.getDefault()
         val parts = smsManager.divideMessage(msg)
         smsManager.sendMultipartTextMessage(number, null, parts, null, null)
@@ -131,7 +126,7 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
                     "Unknown"
                 }
             }
-        } finally {
+        } catch (e:Exception) {
             contactLookup?.close()
         }
         return name
@@ -146,6 +141,27 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
                 telecomManager.endCall()
 
             }
+        }
+    }
+
+    private fun sendNotification(msg: String) {
+        val random = Random(System.currentTimeMillis())
+        val list = listOf(1, 2, 3)
+        val randomInt = list[random.nextInt(list.size)]
+        val intent = Intent(context, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher).setContentTitle("Declined Call Information")
+            .setContentText(msg).setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent).setAutoCancel(true)
+
+        with(NotificationManagerCompat.from(context)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(randomInt, builder.build())
         }
     }
 

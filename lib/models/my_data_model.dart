@@ -4,7 +4,7 @@ class MyDataModel {
   String? date;
   String? time;
   String? state;
-
+ 
   MyDataModel({required this.id, required this.name, required this.date, required this.time, required this.state});
 
   Map<String, dynamic> toMap() {

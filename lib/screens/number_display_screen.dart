@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:caller_app/home_screen.dart';
+import 'package:caller_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,7 +15,7 @@ class NumberDisplayScreen extends StatefulWidget {
 }
 
 class _NumberDisplayScreenState extends State<NumberDisplayScreen> {
-  var _androidAppRetain = MethodChannel("android_app_retain");
+  final _androidAppRetain = const MethodChannel("android_app_retain");
 
   @override
   void initState() {
@@ -26,7 +26,7 @@ class _NumberDisplayScreenState extends State<NumberDisplayScreen> {
     if (Platform.isAndroid) {
       if (Navigator.of(context).canPop()) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
-          return HomeScreen();
+          return const HomeScreen();
         }));
         return Future.value(true);
         

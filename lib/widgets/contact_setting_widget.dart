@@ -1,6 +1,8 @@
-import 'package:caller_app/data_storage.dart';
+import 'dart:async';
+import 'dart:isolate';
+
+import 'package:caller_app/data/data_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class ContactSettingWidget extends StatefulWidget {
   const ContactSettingWidget({super.key});
@@ -14,34 +16,134 @@ class _ContactSettingWidgetState extends State<ContactSettingWidget> {
   bool smsChecked = false;
   final dataStorageSP = DataStorageSP();
   final smsController = TextEditingController();
+  late int _countdown;
+  late ReceivePort _receivePort;
+  late Isolate _isolate;
+  late SendPort _sendPort;
   void saveChanges() {
-    if(groupValue != -1){
-      if(groupValue == 1){
+    if (groupValue != -1) {
+      if (groupValue == 1) {
         dataStorageSP.saveData("1 hour", "duration");
-      }
-      else if(groupValue == 2){
+        dataStorageSP.saveCountdown(3600, "countdown");
+      } else if (groupValue == 2) {
         dataStorageSP.saveData("3 hour", "duration");
-      }
-      else if(groupValue == 3){
+        dataStorageSP.saveCountdown(10800, "countdown");
+      } else if (groupValue == 3) {
         dataStorageSP.saveData("6 hour", "duration");
-      }
-      else if(groupValue == 4){
+        dataStorageSP.saveCountdown(21600, "countdown");
+      } else if (groupValue == 4) {
         dataStorageSP.saveData("24 hour", "duration");
-      }
-      else if(groupValue == 5){
+        dataStorageSP.saveCountdown(86400, "countdown");
+      } else if (groupValue == 5) {
         dataStorageSP.saveData("3 day", "duration");
-      }
-      else if(groupValue == 6){
+        dataStorageSP.saveCountdown(259200, "countdown");
+      } else if (groupValue == 6) {
         dataStorageSP.saveData("7 day", "duration");
-      }
-      else if(groupValue == 7){
+        dataStorageSP.saveCountdown(604800, "countdown");
+      } else if (groupValue == 7) {
         dataStorageSP.saveData("30 day", "duration");
+        dataStorageSP.saveCountdown(2592000, "countdown");
       }
       dataStorageSP.saveDataBool(smsChecked, "SMS");
       dataStorageSP.saveData(smsController.text.toString(), "message");
       dataStorageSP.saveData("contacts", "saved");
       Navigator.pop(context);
+      _initializeCountdown();
     }
+  }
+
+  getOptions() async {
+    final sms = await dataStorageSP.getDataBool("SMS");
+    final smsMessage = await dataStorageSP.getData("message");
+    final duration = await dataStorageSP.getData("duration");
+
+    setState(() {
+      smsChecked = sms;
+      smsController.text = smsMessage;
+      if (duration == "1 hour") {
+        groupValue = 1;
+      } else if (duration == "3 hour") {
+        groupValue = 2;
+      } else if (duration == "6 hour") {
+        groupValue = 3;
+      } else if (duration == "24 hour") {
+        groupValue = 4;
+      } else if (duration == "3 day") {
+        groupValue = 5;
+      } else if (duration == "7 day") {
+        groupValue = 6;
+      } else if (duration == "30 day") {
+        groupValue = 7;
+      }
+    });
+  }
+
+  void _initializeCountdown() async {
+    _countdown =
+        await dataStorageSP.getCountdown("countdown"); // Initial countdown time
+    if (_countdown > 0) {
+      _startCountdown();
+    } else {
+      // Perform action when countdown reaches zero
+      _onCountdownZero();
+    }
+  }
+
+  void _startCountdown() async {
+    _receivePort = ReceivePort();
+    _isolate = await Isolate.spawn(_countdownTimer, _receivePort.sendPort);
+    _receivePort.listen((message) {
+      setState(() {
+        _countdown = message as int;
+        if (_countdown == 0) {
+          // Perform action when countdown reaches zero
+          _onCountdownZero();
+        }
+      });
+    });
+
+    // Get sendPort from receivePort
+    _sendPort = await _receivePort.first;
+    // Send initial countdown value to isolate
+    _sendPort.send(_countdown);
+  }
+
+  static void _countdownTimer(SendPort sendPort) {
+    late int countdown;
+    final receivePort = ReceivePort();
+    sendPort.send(receivePort.sendPort); // Send sendPort to main isolate
+
+    receivePort.listen((message) {
+      if (message is int) {
+        countdown = message;
+        Timer.periodic(Duration(seconds: 1), (timer) {
+          countdown--;
+          sendPort.send(countdown);
+          if (countdown <= 0) {
+            timer.cancel();
+          }
+        });
+      }
+    });
+  }
+
+  void _onCountdownZero() {
+    dataStorageSP.saveData("", "duration");
+    dataStorageSP.saveData("accept", "saved");
+    dataStorageSP.saveCountdown(0, "countdown");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getOptions();
+  }
+
+  @override
+  void dispose() {
+    _receivePort.close();
+    _isolate.kill(priority: Isolate.immediate);
+    super.dispose();
   }
 
   @override
@@ -223,23 +325,23 @@ class _ContactSettingWidgetState extends State<ContactSettingWidget> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
+                      style: const ButtonStyle(
+                          backgroundColor: MaterialStatePropertyAll(
+                              Color.fromARGB(255, 107, 83, 171))),
                       child: const Text(
                         "Cancel",
                         style: TextStyle(color: Colors.white),
                       ),
-                      style: const ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll(
-                              Color.fromARGB(255, 107, 83, 171))),
                     ),
                     ElevatedButton(
                       onPressed: saveChanges,
+                      style: const ButtonStyle(
+                          backgroundColor: MaterialStatePropertyAll(
+                              Color.fromARGB(255, 107, 83, 171))),
                       child: const Text(
                         "Save Changes",
                         style: TextStyle(color: Colors.white),
                       ),
-                      style: const ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll(
-                              Color.fromARGB(255, 107, 83, 171))),
                     ),
                   ],
                 ),

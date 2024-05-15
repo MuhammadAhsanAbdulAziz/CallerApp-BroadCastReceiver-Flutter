@@ -1,21 +1,25 @@
-import 'package:caller_app/contact_setting_widget.dart';
-import 'package:caller_app/data_storage.dart';
-import 'package:caller_app/history_screen.dart';
-import 'package:caller_app/notification_service.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:caller_app/widgets/contact_setting_widget.dart';
+import 'package:caller_app/data/data_storage.dart';
+import 'package:caller_app/screens/history_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int groupValue = 0;
   final dataStorageSP = DataStorageSP();
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       future: dataStorageSP.getData("saved"),
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data == "accept") {
-                            groupValue = 1;
+                          groupValue = 1;
                           return Radio(
                             value: 1,
                             groupValue: groupValue,
@@ -119,18 +123,17 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (ctx){
-                  return HistoryScreen();
+                Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+                  return const HistoryScreen();
                 }));
-                
               },
+              style: const ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll(
+                      Color.fromARGB(255, 107, 83, 171))),
               child: const Text(
                 "Show History",
                 style: TextStyle(color: Colors.white),
               ),
-              style: const ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(
-                      Color.fromARGB(255, 107, 83, 171))),
             ),
           ),
         ),

@@ -21,13 +21,13 @@ import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.EventChannel
 
 class MyStreamHandler(private val context: Context) : EventChannel.StreamHandler {
-    private var receiver: MyBroadcastReceiver? = null
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         if (events == null) return
-        receiver = MyBroadcastReceiver(events)
-        val intentFilter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
-        context.registerReceiver(receiver, intentFilter)
+        val intent = Intent(context, MyForegroundService::class.java)
+        MyForegroundService.eventSink = events
+        context.startForegroundService(intent)
     }
 
     override fun onCancel(arguments: Any?) {

@@ -1,7 +1,7 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'my_data_mode.dart';
+import '../models/my_data_model.dart';
 
 class DatabaseHelper {
   static const String tableName = 'my_table';

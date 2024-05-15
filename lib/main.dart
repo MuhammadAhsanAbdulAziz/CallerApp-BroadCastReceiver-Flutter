@@ -1,11 +1,8 @@
 import 'dart:async';
 
-import 'package:caller_app/data_storage.dart';
-import 'package:caller_app/database_helper.dart';
-import 'package:caller_app/home_screen.dart';
-import 'package:caller_app/my_data_mode.dart';
-import 'package:caller_app/notification_service.dart';
-import 'package:caller_app/number_display_screen.dart';
+import 'package:caller_app/data/data_storage.dart';
+import 'package:caller_app/screens/number_display_screen.dart';
+import 'package:caller_app/screens/permission_request_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -28,7 +25,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     setState(() {
       number = "";
@@ -37,40 +33,23 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    LocalNotificationManager.initialize();
     onStreamCall();
-    if (dataStorageSP.getData("saved") == "") {
+    checkOptions();
+  }
+
+  checkOptions() async {
+    if (await dataStorageSP.getData("saved") == "") {
       dataStorageSP.saveData("accept", "saved");
     }
   }
 
   onStreamCall() {
     _streamSubscription = callChannel.receiveBroadcastStream().listen((event) {
-      sendNotificaitons(event);
       setState(() {
         number = event.toString();
       });
     });
-  }
-
-  sendNotificaitons(dynamic event) async {
-    MyDataModel data = await DatabaseHelper().getSingleData();
-    if (event.toString() == "popup") {
-      LocalNotificationManager.showNotification(
-          id: 1,
-          title: "Declined Phone Call",
-          body: "${data.name}\n time: ${data.time}   date: ${data.date}\n SMS : Not Send",
-          payload: "payload");
-    }
-    if (event.toString() == "popupSms") {
-      LocalNotificationManager.showNotification(
-          id: 1,
-          title: "Declined Phone Call",
-          body: "${data.name}\n time: ${data.time}   date: ${data.date}\n SMS : Sent",
-          payload: "payload");
-    }
   }
 
   @override
@@ -86,7 +65,7 @@ class _MyAppState extends State<MyApp> {
           ? NumberDisplayScreen(
               number: number,
             )
-          : const HomeScreen(),
+          : const PermissionRequestScreen(),
     );
   }
 }
