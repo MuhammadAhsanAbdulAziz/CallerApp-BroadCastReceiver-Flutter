@@ -154,7 +154,7 @@ class MyBroadcastReceiver(private val events: EventChannel.EventSink?) : Broadca
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, "Declined Call")
             .setSmallIcon(R.mipmap.ic_launcher).setContentTitle("Declined Call Information")
             .setContentText(msg).setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent).setAutoCancel(true)

@@ -32,13 +32,16 @@ class MyForegroundService : Service() {
             .build()
 
         startForeground(1, notification)
+        val receiver = MyBroadcastReceiver(eventSink)
+        val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
+        registerReceiver(receiver, filter)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Register the BroadcastReceiver here
-        val receiver = MyBroadcastReceiver(eventSink)
-        val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
-        registerReceiver(receiver, filter)
+//        val receiver = MyBroadcastReceiver(eventSink)
+//        val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
+//        registerReceiver(receiver, filter)
 
         return START_STICKY
     }

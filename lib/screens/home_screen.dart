@@ -96,6 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       future: dataStorageSP.getData("saved"),
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data == "accept") {
+                            groupValue = 1;
                           return Radio(
                             value: 1,
                             groupValue: groupValue,
@@ -133,6 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       future: dataStorageSP.getData("saved"),
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data == "contacts") {
+                            groupValue = 2;
                           return Radio(
                             value: 2,
                             groupValue: groupValue,
