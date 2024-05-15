@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:caller_app/data/data_storage.dart';
+import 'package:caller_app/screens/home_screen.dart';
 import 'package:caller_app/screens/number_display_screen.dart';
-import 'package:caller_app/screens/permission_request_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     super.dispose();
     setState(() {
-      number = "";
+      number="";
     });
   }
 
@@ -36,6 +36,12 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     onStreamCall();
     checkOptions();
+  }
+
+  removeNumber() {
+    setState(() {
+      number = "";
+    });
   }
 
   checkOptions() async {
@@ -62,10 +68,8 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: number.isNotEmpty
-          ? NumberDisplayScreen(
-              number: number,
-            )
-          : const PermissionRequestScreen(),
+          ? NumberDisplayScreen(number: number,func: removeNumber,)
+          : const HomeScreen(),
     );
   }
 }

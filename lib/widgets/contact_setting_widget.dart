@@ -5,7 +5,9 @@ import 'package:caller_app/data/data_storage.dart';
 import 'package:flutter/material.dart';
 
 class ContactSettingWidget extends StatefulWidget {
-  const ContactSettingWidget({super.key});
+  const ContactSettingWidget({super.key, required this.func});
+
+  final Function func;
 
   @override
   State<ContactSettingWidget> createState() => _ContactSettingWidgetState();
@@ -49,6 +51,7 @@ class _ContactSettingWidgetState extends State<ContactSettingWidget> {
       dataStorageSP.saveData("contacts", "saved");
       Navigator.pop(context);
       _initializeCountdown();
+      widget.func();
     }
   }
 

@@ -9,7 +9,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FixFlutterActivity() {
 
     private val EVENT_CHANNEL = "CALL_CHANNEL"
     private lateinit var channel: EventChannel
@@ -19,16 +19,9 @@ class MainActivity : FlutterActivity() {
         channel = EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENT_CHANNEL)
         myStreamHandler = MyStreamHandler(context)
         channel.setStreamHandler(myStreamHandler)
-
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "android_app_retain").apply {
-            setMethodCallHandler { method, result ->
-                if (method.method == "sendToBackground") {
-                    moveTaskToBack(true)
-                }
-            }
-        }
         createNotificationChannel()
     }
+
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

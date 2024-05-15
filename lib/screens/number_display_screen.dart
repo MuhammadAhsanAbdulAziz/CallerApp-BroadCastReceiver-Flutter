@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:io';
-
-import 'package:caller_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class NumberDisplayScreen extends StatefulWidget {
-  const NumberDisplayScreen({super.key, required this.number});
+  const NumberDisplayScreen({super.key,required this.func,required this.number});
 
+  final Function func;
   final String number;
 
   @override
@@ -15,34 +13,17 @@ class NumberDisplayScreen extends StatefulWidget {
 }
 
 class _NumberDisplayScreenState extends State<NumberDisplayScreen> {
-  final _androidAppRetain = const MethodChannel("android_app_retain");
 
   @override
   void initState() {
     super.initState();
     
   }
-  sendToBackground() async {
-    if (Platform.isAndroid) {
-      if (Navigator.of(context).canPop()) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
-          return const HomeScreen();
-        }));
-        return Future.value(true);
-        
-      } else {
-        _androidAppRetain.invokeMethod("sendToBackground");
-        return Future.value(false);
-      }
-    } else {
-      return Future.value(true);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     Timer(const Duration(seconds: 4), () {
-      sendToBackground();
+      widget.func();
+     SystemNavigator.pop();
     });
     return Scaffold(
       body: Center(

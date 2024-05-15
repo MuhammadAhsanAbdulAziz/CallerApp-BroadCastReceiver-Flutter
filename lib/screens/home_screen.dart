@@ -1,7 +1,12 @@
+import 'dart:io';
+
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:caller_app/widgets/contact_setting_widget.dart';
 import 'package:caller_app/data/data_storage.dart';
 import 'package:caller_app/screens/history_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,12 +19,69 @@ class _HomeScreenState extends State<HomeScreen> {
   int groupValue = 0;
   final dataStorageSP = DataStorageSP();
 
+  changeTick(){
+    setState(() {
+      groupValue = 2;
+    });
+  }
+
+  Future<void> requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.contacts,
+      Permission.phone,
+      Permission.sms,
+    ].request();
+
+    bool permissionsGranted =
+        statuses.values.every((status) => status.isGranted);
+    if (!(await Permission.systemAlertWindow.isGranted)) {
+      openSettings();
+    }
+    if (!permissionsGranted ||
+        !(await Permission.systemAlertWindow.isGranted)) {
+      showPermissionDeniedDialog();
+    }
+  }
+
+  void showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Permission Required'),
+        content:
+            const Text('Some permissions were denied. The app will close.'),
+        actions: [
+          TextButton(
+            onPressed: () => closeApp(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void openSettings() {
+    const intent = AndroidIntent(
+      action: 'android.settings.action.MANAGE_OVERLAY_PERMISSION',
+      data: 'package:com.example.caller_app',
+    );
+    intent.launch();
+  }
+
+  void closeApp() {
+    if (Platform.isAndroid) {
+      SystemNavigator.pop(); // Closes the app on Android
+    } else if (Platform.isIOS) {
+      exit(0); // Use this cautiously on iOS
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    requestPermissions();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return const ContactSettingWidget();
+                        return ContactSettingWidget(func:changeTick);
                       },
                     );
                   },

@@ -19,7 +19,7 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     super.initState();
     requestPermissions();
   }
-
+  
   Future<void> requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.contacts,
@@ -28,7 +28,9 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     ].request();
 
     bool permissionsGranted = statuses.values.every((status) => status.isGranted);
-
+    if(!(await Permission.systemAlertWindow.isGranted)){
+      openSettings();
+    }
     if (!permissionsGranted || !(await Permission.systemAlertWindow.isGranted)) {
       showPermissionDeniedDialog();
     }
